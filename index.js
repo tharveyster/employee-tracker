@@ -45,6 +45,8 @@ const mainMenu = () => {
             case "View all employees":
                 viewAllEmployees();
                 break;
+            case "Add department":
+                addDepartment();
         }
     })
 }
@@ -83,14 +85,21 @@ const viewAllEmployees = () => {
 }
 
 const addDepartment = () => {
-    const departmentName = "Test Department"
-    db.query(`INSERT INTO department (name) VALUES ("${departmentName}")`, function(err, results) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log(results);
-            console.log(`${departmentName} successfully added.`);
-        }
+    inquirer
+    .prompt({
+        name: "newDepartment",
+        type: "input",
+        message: "New department name:"
+    })
+    .then((answer) => {
+        db.query(`INSERT INTO department (name) VALUES ("${answer.newDepartment}")`, function(err, results) {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log(`${answer.newDepartment} successfully added.`);
+                mainMenu();
+            }
+        })
     })
 }
 
@@ -124,9 +133,6 @@ const addRole = () => {
 
 // TODO - View department budget
 
-//viewAllRoles();
-//viewAllEmployees();
-//addDepartment();
 //addRole();
 
 mainMenu();
