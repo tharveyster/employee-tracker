@@ -12,12 +12,50 @@ const db = mysql.createConnection(
     console.log(`Connected to the employee_db database.`)
 );
 
+const mainMenu = () => {
+    inquirer
+    .prompt({
+        name: "action",
+        type: "list",
+        message: "MAIN MENU",
+        choices: [
+            "View all departments",
+            "View all roles",
+            "View all employees",
+            "Add department",
+            "Add role",
+            "Add employee",
+            "Update employee role",
+            "Update employee manager",
+            "View employees by department",
+            "Delete department",
+            "Delete role",
+            "Delete employee",
+            "View department budget"
+        ]
+    })
+    .then((answer) => {
+        switch (answer.action) {
+            case "View all departments":
+                viewAllDepartments();
+                break;
+            case "View all roles":
+                viewAllRoles();
+                break;
+            case "View all employees":
+                viewAllEmployees();
+                break;
+        }
+    })
+}
+
 const viewAllDepartments = () => {
     db.query('SELECT name AS "DEPARTMENT NAME", id AS ID FROM department', function(err, results) {
         if (err) {
             console.log(err);
         } else {
             console.table(results);
+            mainMenu();
         }
     });
 }
@@ -28,6 +66,7 @@ const viewAllRoles = () => {
             console.log(err);
         } else {
             console.table(results);
+            mainMenu();
         }
     })
 }
@@ -38,6 +77,7 @@ const viewAllEmployees = () => {
             console.log(err);
         } else {
             console.table(results);
+            mainMenu();
         }
     })
 }
@@ -68,8 +108,25 @@ const addRole = () => {
     })
 }
 
-//viewAllDepartments();
+// TODO - Add employee
+
+// TODO - Change employee role
+
+// TODO - Change employee manager
+
+// TODO - View employees by department
+
+// TODO - Delete departments
+
+// TODO - Delete roles
+
+// TODO - Delete employees
+
+// TODO - View department budget
+
 //viewAllRoles();
 //viewAllEmployees();
 //addDepartment();
 //addRole();
+
+mainMenu();
