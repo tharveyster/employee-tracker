@@ -42,10 +42,34 @@ const viewAllEmployees = () => {
     })
 }
 
-function addDepartment() {
-    db.query('INSERT INTO department (name) VALUES (?)')
+const addDepartment = () => {
+    const departmentName = "Test Department"
+    db.query(`INSERT INTO department (name) VALUES ("${departmentName}")`, function(err, results) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(results);
+            console.log(`${departmentName} successfully added.`);
+        }
+    })
 }
 
-viewAllDepartments();
-viewAllRoles();
-viewAllEmployees();
+const addRole = () => {
+    const roleTitle = "Test Role";
+    const roleSalary = 8.00;
+    const roleDepId = 1
+    db.query(`INSERT INTO role (title, salary, department_id) VALUES ("${roleTitle}", ${roleSalary}, ${roleDepId})`, function(err, results) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(results);
+            console.log(`${roleTitle} successfully added.`);
+        }
+    })
+}
+
+//viewAllDepartments();
+//viewAllRoles();
+//viewAllEmployees();
+//addDepartment();
+//addRole();
