@@ -13,24 +13,28 @@ const db = mysql.createConnection(
 );
 
 function viewAllDepartments() {
-    db.query('SELECT * FROM department', function(err, results) {
+    db.query('SELECT name AS "DEPARTMENT NAME", id AS ID FROM department', function(err, results) {
         console.log(err);
         console.table(results);
     });
 }
 
 function viewAllRoles() {
-    db.query('SELECT * FROM role', function(err, results) {
+    db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a JOIN department b ON a.department_id = b.id', function(err, results) {
         console.log(err);
         console.table(results);
     })
 }
 
 function viewAllEmployees() {
-    db.query('SELECT * FROM employee', function(err, results) {
+    db.query('SELECT a.id AS ID, a.first_name AS "FIRST NAME", a.last_name AS "LAST NAME", b.title AS "JOB TITLE", c.name AS DEPARTMENT, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a JOIN role b ON a.role_id = b.id JOIN department c ON b.department_id = c.id LEFT JOIN employee d on a.manager_id = d.id', function(err, results) {
         console.log(err);
         console.table(results);
     })
+}
+
+function addDepartment() {
+    db.query('INSERT INTO department (name) VALUES (?)')
 }
 
 viewAllDepartments();
