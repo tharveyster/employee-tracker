@@ -57,6 +57,9 @@ const mainMenu = () => {
             case "Update employee role":
                 updateRole();
                 break;
+            case "Update employee manager":
+                updateManager();
+                break;
             case "Delete department":
                 deleteDepartment();
                 break;
@@ -286,6 +289,55 @@ const updateRole = () => {
                                     console.log(err);
                                 } else {
                                     console.log('Employee role successfully updated.');
+                                    mainMenu();
+                                }
+                            })
+                        })
+                    }
+                })
+            })
+        }
+    })
+}
+
+const updateManager = () => {
+    db.query('SELECT * FROM employee', (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const employeeList = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: employeeList,
+                    message: "Which employee do you want to change?"
+                }
+            ])
+            .then(answer => {
+                const nameList = [answer.name];
+                
+                db.query('SELECT * FROM employee', (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        const managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+                        inquirer.prompt([
+                            {
+                                name: "manager",
+                                type: "list",
+                                choices: managers,
+                                message: "New manager for this employee:"
+                            }
+                        ])
+                        .then(managerChoice => {
+                            db.query('UPDATE employee SET manager_id = ? WHERE id = ?', [managerChoice.manager, answer.name], (err, res) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log('Employee manager successfully updated.');
                                     mainMenu();
                                 }
                             })
