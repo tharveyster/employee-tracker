@@ -55,6 +55,9 @@ const mainMenu = () => {
             case "Add employee":
                 addEmployee();
                 break;
+            case "Delete role":
+                deleteRole();
+                break;
             case "Delete employee":
                 deleteEmployee();
                 break;
@@ -63,33 +66,33 @@ const mainMenu = () => {
 }
 
 const viewAllDepartments = async () => {
-    db.query('SELECT name AS "DEPARTMENT NAME", id AS ID FROM department', function(err, results) {
+    db.query('SELECT name AS "DEPARTMENT NAME", id AS ID FROM department', function(err, res) {
         if (err) {
             console.log(err);
         } else {
-            console.table(results);
+            console.table(res);
             mainMenu();
         }
     });
 }
 
 const viewAllRoles = async () => {
-    db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a JOIN department b ON a.department_id = b.id', function(err, results) {
+    db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a JOIN department b ON a.department_id = b.id', function(err, res) {
         if (err) {
             console.log(err);
         } else {
-            console.table(results);
+            console.table(res);
             mainMenu();
         }
     })
 }
 
 const viewAllEmployees = async () => {
-    db.query('SELECT a.id AS ID, a.first_name AS "FIRST NAME", a.last_name AS "LAST NAME", b.title AS "JOB TITLE", c.name AS DEPARTMENT, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a JOIN role b ON a.role_id = b.id JOIN department c ON b.department_id = c.id LEFT JOIN employee d on a.manager_id = d.id', function(err, results) {
+    db.query('SELECT a.id AS ID, a.first_name AS "FIRST NAME", a.last_name AS "LAST NAME", b.title AS "JOB TITLE", c.name AS DEPARTMENT, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a LEFT JOIN role b ON a.role_id = b.id LEFT JOIN department c ON b.department_id = c.id LEFT JOIN employee d ON a.manager_id = d.id', function(err, res) {
         if (err) {
             console.log(err);
         } else {
-            console.table(results);
+            console.table(res);
             mainMenu();
         }
     })
@@ -103,7 +106,7 @@ const addDepartment = async () => {
         message: "New department name:"
     })
     .then((answer) => {
-        db.query(`INSERT INTO department (name) VALUES (?)`, `${answer.newDepartment}`, function(err, results) {
+        db.query(`INSERT INTO department (name) VALUES (?)`, `${answer.newDepartment}`, function(err, res) {
             if (err) {
                 console.log(err);
             } else {
@@ -115,7 +118,7 @@ const addDepartment = async () => {
 }
 
 const addRole = async () => {
-    db.query('SELECT * FROM department', function (err, results) {
+    db.query('SELECT * FROM department', function (err, res) {
         if (err) {
             console.log(err);
         } else {
@@ -136,8 +139,8 @@ const addRole = async () => {
                     type: "list",
                     choices: function() {
                         let departmentArray = [];
-                        for (let i = 0; i < results.length; i++) {
-                            departmentArray.push(results[i].name);
+                        for (let i = 0; i < res.length; i++) {
+                            departmentArray.push(res[i].name);
                         }
                         return departmentArray;
                     },
@@ -145,9 +148,9 @@ const addRole = async () => {
             ])
             .then((answer) => {
                 let department_id;
-                for (let j = 0; j < results.length; j++) {
-                    if (results[j].name == answer.newRoleDepartment) {
-                        department_id = results[j].id;
+                for (let j = 0; j < res.length; j++) {
+                    if (res[j].name == answer.newRoleDepartment) {
+                        department_id = res[j].id;
                     }
                 }
                 db.query('INSERT INTO role SET ?',
@@ -156,11 +159,11 @@ const addRole = async () => {
                         salary: answer.newRoleSalary,
                         department_id: department_id
                     },
-                ), function (err, results) {
+                ), function (err, res) {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log(results);
+                        console.log(res);
                     }
                 }
                 console.log(`${answer.newRoleTitle} role successfully added.`);
@@ -186,11 +189,11 @@ const addEmployee = async () => {
     ])
     .then(answer => {
         const names = [answer.newEmployeeFirstName, answer.newEmployeeLastName];
-        db.query('SELECT id, title FROM role', (err, results) => {
+        db.query('SELECT id, title FROM role', (err, res) => {
             if (err) {
                 console.log(err);
             } else {
-                const roles = results.map(({ id, title }) => ({ name: title, value: id }));
+                const roles = res.map(({ id, title }) => ({ name: title, value: id }));
                 inquirer.prompt([
                     {
                         name: "role",
@@ -203,10 +206,10 @@ const addEmployee = async () => {
                     const role = roleChoice.role;
                     names.push(role);
 
-                    db.query('SELECT * FROM employee', (err, results) => {
+                    db.query('SELECT * FROM employee', (err, res) => {
                         if (err) throw err;
 
-                        const managers = results.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
+                        const managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
                         managers.push({ name: 'None', value: null });
 
                         inquirer.prompt([
@@ -221,7 +224,7 @@ const addEmployee = async () => {
                             const manager = managerChoice.manager;
                             names.push(manager);
 
-                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, results) => {
+                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, res) => {
                                 if (err) {
                                     console.log(err);
                                 } else {
@@ -238,12 +241,42 @@ const addEmployee = async () => {
     })
 }
 
-const deleteEmployee = () => {
-    db.query('SELECT * FROM employee', (err, results) => {
+const deleteRole = () => {
+    db.query('SELECT * FROM role', (err, res) => {
         if (err) {
             console.log(err);
         } else {
-            const employeeList = results.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
+            const roleList = res.map(({ id, title }) => ({ name: title, value: id}));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: roleList,
+                    message: "Role to delete:"
+                }
+            ])
+            .then(answer => {
+                db.query('DELETE FROM role WHERE id = ?', answer.name, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log('Role successfully deleted.')
+                        mainMenu();
+                    }
+                })
+            })
+        }
+    })
+}
+
+const deleteEmployee = () => {
+    db.query('SELECT * FROM employee', (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const employeeList = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
 
             inquirer
             .prompt([
@@ -255,7 +288,7 @@ const deleteEmployee = () => {
                 }
             ])
             .then(answer => {
-                db.query('DELETE FROM employee WHERE id = ?', answer.name, (err, results) => {
+                db.query('DELETE FROM employee WHERE id = ?', answer.name, (err, res) => {
                     if (err) {
                         console.log(err);
                     } else {
