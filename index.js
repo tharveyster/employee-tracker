@@ -1,7 +1,6 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
-const { listenerCount } = require('events');
 
 const db = mysql.createConnection(
     {
@@ -55,6 +54,9 @@ const mainMenu = () => {
             case "Add employee":
                 addEmployee();
                 break;
+            case "Delete department":
+                deleteDepartment();
+                break;
             case "Delete role":
                 deleteRole();
                 break;
@@ -77,7 +79,7 @@ const viewAllDepartments = async () => {
 }
 
 const viewAllRoles = async () => {
-    db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a JOIN department b ON a.department_id = b.id', function(err, res) {
+    db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a LEFT JOIN department b ON a.department_id = b.id', function(err, res) {
         if (err) {
             console.log(err);
         } else {
@@ -238,6 +240,36 @@ const addEmployee = async () => {
                 })
             }
         })
+    })
+}
+
+const deleteDepartment = () => {
+    db.query('SELECT * FROM department', (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const departmentList = res.map(({ id, name }) => ({ name: name, value: id}));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: departmentList,
+                    message: "Department to delete:"
+                }
+            ])
+            .then(answer => {
+                db.query('DELETE FROM department WHERE id = ?', answer.name, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log('Department successfully deleted.')
+                        mainMenu();
+                    }
+                })
+            })
+        }
     })
 }
 
