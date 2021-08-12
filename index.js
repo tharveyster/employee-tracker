@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
+const { listenerCount } = require('events');
 
 const db = mysql.createConnection(
     {
@@ -53,6 +54,9 @@ const mainMenu = () => {
                 break;
             case "Add employee":
                 addEmployee();
+                break;
+            case "Delete employee":
+                deleteEmployee();
                 break;
         }
     })
@@ -182,42 +186,42 @@ const addEmployee = async () => {
     ])
     .then(answer => {
         const names = [answer.newEmployeeFirstName, answer.newEmployeeLastName];
-        db.query('SELECT id, title FROM role', (err, data) => {
+        db.query('SELECT id, title FROM role', (err, results) => {
             if (err) {
                 console.log(err);
             } else {
-                const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+                const roles = results.map(({ id, title }) => ({ name: title, value: id }));
                 inquirer.prompt([
                     {
-                        type: 'list',
-                        name: 'role',
-                        message: "New employee role:",
-                        choices: roles
+                        name: "role",
+                        type: "list",
+                        choices: roles,
+                        message: "New employee role:"
                     }
                 ])
                 .then(roleChoice => {
                     const role = roleChoice.role;
                     names.push(role);
 
-                    db.query('SELECT * FROM employee', (err, data) => {
+                    db.query('SELECT * FROM employee', (err, results) => {
                         if (err) throw err;
 
-                        const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
+                        const managers = results.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
                         managers.push({ name: 'None', value: null });
 
                         inquirer.prompt([
                             {
-                                type: 'list',
-                                name: 'manager',
-                                message: "New employee manager:",
-                                choices: managers
+                                name: "manager",
+                                type: "list",
+                                choices: managers,
+                                message: "New employee manager:"
                             }
                         ])
                         .then(managerChoice => {
                             const manager = managerChoice.manager;
                             names.push(manager);
 
-                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, result) => {
+                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, results) => {
                                 if (err) {
                                     console.log(err);
                                 } else {
@@ -234,6 +238,36 @@ const addEmployee = async () => {
     })
 }
 
+const deleteEmployee = () => {
+    db.query('SELECT * FROM employee', (err, results) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const employeeList = results.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: employeeList,
+                    message: "Employee to delete:"
+                }
+            ])
+            .then(answer => {
+                db.query('DELETE FROM employee WHERE id = ?', answer.name, (err, results) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log('Employee successfully deleted.')
+                        mainMenu();
+                    }
+                })
+            })
+        }
+    })
+}
+
 // TODO - Change employee role
 
 // TODO - Change employee manager
@@ -243,8 +277,6 @@ const addEmployee = async () => {
 // TODO - Delete departments
 
 // TODO - Delete roles
-
-// TODO - Delete employees
 
 // TODO - View department budget
 
