@@ -17,7 +17,7 @@ const mainMenu = () => {
     .prompt({
         name: "action",
         type: "list",
-        message: "MAIN MENU",
+        message: "What would you like to do?",
         choices: [
             "View all departments",
             "View all roles",
@@ -50,6 +50,9 @@ const mainMenu = () => {
                 break;
             case "Add role":
                 addRole();
+                break;
+            case "Add employee":
+                addEmployee();
                 break;
         }
     })
@@ -163,6 +166,150 @@ const addRole = async () => {
     })
 }
 
+const addEmployee = async () => {
+    inquirer
+    .prompt([
+        {
+            name: "newEmployeeFirstName",
+            type: "input",
+            message: "New employee first name:"
+        },
+        {
+            name: "newEmployeeLastName",
+            type: "input",
+            message: "New employee last name:"
+        }
+    ])
+    .then(answer => {
+        const names = [answer.newEmployeeFirstName, answer.newEmployeeLastName];
+        db.query('SELECT id, title FROM role', (err, data) => {
+            if (err) {
+                console.log(err);
+            } else {
+                const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: "New employee role:",
+                        choices: roles
+                    }
+                ])
+                .then(roleChoice => {
+                    const role = roleChoice.role;
+                    names.push(role);
+
+                    db.query('SELECT * FROM employee', (err, data) => {
+                        if (err) throw err;
+
+                        const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
+                        managers.push({ name: 'None', value: null });
+
+                        inquirer.prompt([
+                            {
+                                type: 'list',
+                                name: 'manager',
+                                message: "New employee manager:",
+                                choices: managers
+                            }
+                        ])
+                        .then(managerChoice => {
+                            const manager = managerChoice.manager;
+                            names.push(manager);
+
+                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, result) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`);
+                                }
+
+                                mainMenu();
+                            });
+                        });
+                    })
+                })
+            }
+        })
+    })
+}
+
+/*const addEmployee = async () => {
+    db.query('SELECT a.id AS roleId, a.title, b.id AS managerId, CONCAT(b.first_name, " ", b.last_name) AS manager FROM role a NATURAL JOIN employee b', function (err, results) {
+        if (err) {
+            console.log(err);
+        } else {
+            inquirer
+            .prompt([
+                {
+                    name: "newEmployeeFirstName",
+                    type: "input",
+                    message: "New employee first name:"
+                },
+                {
+                    name: "newEmployeeLastName",
+                    type: "input",
+                    message: "New employee last name:"
+                },
+                {
+                    name: "newEmployeeRole",
+                    type: "list",
+                    choices: function() {
+                        let roleArray = [];
+                        for (let i = 0; i < results.length; i++) {
+                            roleArray.push(results[i].title);
+                        }
+                        return roleArray;
+                    },
+                    message: "New employee role:"
+                },
+                {
+                    name: "newEmployeeManager",
+                    type: "list",
+                    choices: function() {
+                        let managerArray = [];
+                        for (let i = 0; i < results.length; i++) {
+                            managerArray.push(results[i].manager);
+                        }
+                        managerArray.push('None');
+                        return managerArray;
+                    },
+                    message: "New employee manager:"
+                }
+            ])
+            .then((answer) => {
+                let role_id;
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].title == answer.newEmployeeRole) {
+                        role_id = results[i].roleId;
+                    }
+                }
+                let manager_id;
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].manager == answer.newEmployeeManager) {
+                        manager_id = results[i].managerId;
+                    }
+                }
+                db.query('INSERT INTO employee SET ?',
+                    {
+                        first_name: answer.newEmployeeFirstName,
+                        last_name: answer.newEmployeeLastName,
+                        role_id: role_id,
+                        manager_id: manager_id
+                    },
+                ), function (err, results) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.log(results);
+                    }
+                }
+                console.log(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`);
+                mainMenu();
+            })
+        }
+    })
+}*/
 // TODO - Add employee
 
 // TODO - Change employee role
