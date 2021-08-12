@@ -54,6 +54,9 @@ const mainMenu = () => {
             case "Add employee":
                 addEmployee();
                 break;
+            case "Update employee role":
+                updateRole();
+                break;
             case "Delete department":
                 deleteDepartment();
                 break;
@@ -209,37 +212,88 @@ const addEmployee = async () => {
                     names.push(role);
 
                     db.query('SELECT * FROM employee', (err, res) => {
-                        if (err) throw err;
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            const managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+                            managers.push({ name: 'None', value: null });
 
-                        const managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
-                        managers.push({ name: 'None', value: null });
-
-                        inquirer.prompt([
-                            {
-                                name: "manager",
-                                type: "list",
-                                choices: managers,
-                                message: "New employee manager:"
-                            }
-                        ])
-                        .then(managerChoice => {
-                            const manager = managerChoice.manager;
-                            names.push(manager);
-
-                            db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, res) => {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    console.log(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`);
+                            inquirer.prompt([
+                                {
+                                    name: "manager",
+                                    type: "list",
+                                    choices: managers,
+                                    message: "New employee manager:"
                                 }
+                            ])
+                            .then(managerChoice => {
+                                const manager = managerChoice.manager;
+                                names.push(manager);
 
-                                mainMenu();
+                                db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', names, (err, res) => {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`);
+                                    }
+
+                                    mainMenu();
+                                });
                             });
-                        });
+                        }
                     })
                 })
             }
         })
+    })
+}
+
+const updateRole = () => {
+    db.query('SELECT * FROM employee', (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const employeeList = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: employeeList,
+                    message: "Which employee do you want to change?"
+                }
+            ])
+            .then(answer => {
+                const nameList = [answer.name];
+                
+                db.query('SELECT id, title FROM role', (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        const roles = res.map(({ id, title }) => ({ name: title, value: id }));
+                        inquirer.prompt([
+                            {
+                                name: "role",
+                                type: "list",
+                                choices: roles,
+                                message: "New role for this employee:"
+                            }
+                        ])
+                        .then(roleChoice => {
+                            db.query('UPDATE employee SET role_id = ? WHERE id = ?', [roleChoice.role, answer.name], (err, res) => {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log('Employee role successfully updated.');
+                                    mainMenu();
+                                }
+                            })
+                        })
+                    }
+                })
+            })
+        }
     })
 }
 
@@ -333,15 +387,9 @@ const deleteEmployee = () => {
     })
 }
 
-// TODO - Change employee role
-
 // TODO - Change employee manager
 
 // TODO - View employees by department
-
-// TODO - Delete departments
-
-// TODO - Delete roles
 
 // TODO - View department budget
 
