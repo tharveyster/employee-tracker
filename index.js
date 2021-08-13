@@ -121,7 +121,16 @@ const addDepartment = async () => {
     .prompt({
         name: "newDepartment",
         type: "input",
-        message: "New department name:"
+        message: "New department name:",
+        validate: (name) => {
+            if (name.length < 1) {
+                return console.log("The department name is required.");
+            } else if (name.length > 30) {
+                return console.log("The department name must be 30 characters or less.");
+            } else {
+                return true;
+            }
+        }
     })
     .then((answer) => {
         db.query(`INSERT INTO department (name) VALUES (?)`, `${answer.newDepartment}`, function(err, res) {
@@ -145,12 +154,30 @@ const addRole = async () => {
                 {
                     name: "newRoleTitle",
                     type: "input",
-                    message: "New role title:"
+                    message: "New role title:",
+                    validate: (name) => {
+                        if (name.length < 1) {
+                            return console.log("The role title is required.");
+                        } else if (name.length > 30) {
+                            return console.log("The role title must be 30 characters or less.");
+                        } else {
+                            return true;
+                        }
+                    }
                 },
                 {
                     name: "newRoleSalary",
                     type: "input",
-                    message: "New role salary:"
+                    message: "New role salary:",
+                    validate: (name) => {
+                        if (name.length < 1) {
+                            return console.log("The salary is required.")
+                        } else if (isNaN(name)) {
+                            return console.log("The salary must be a number.")
+                        } else {
+                            return true;
+                        }
+                    }
                 },
                 {
                     name: "newRoleDepartment",
@@ -197,12 +224,30 @@ const addEmployee = async () => {
         {
             name: "newEmployeeFirstName",
             type: "input",
-            message: "New employee first name:"
+            message: "New employee first name:",
+            validate: (name) => {
+                if (name.length < 1) {
+                    return console.log("The employee first name is required.");
+                } else if (name.length > 30) {
+                    return console.log("The employee first name must be 30 characters or less.");
+                } else {
+                    return true;
+                }
+            }
         },
         {
             name: "newEmployeeLastName",
             type: "input",
-            message: "New employee last name:"
+            message: "New employee last name:",
+            validate: (name) => {
+                if (name.length < 1) {
+                    return console.log("The employee last name is required.");
+                } else if (name.length > 30) {
+                    return console.log("The employee last name must be 30 characters or less.");
+                } else {
+                    return true;
+                }
+            }
         }
     ])
     .then(answer => {
