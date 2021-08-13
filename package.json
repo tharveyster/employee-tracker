@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/tharveyster/employee-tracker#readme",
   "dependencies": {
+    "chalk": "^4.1.2",
     "console.table": "^0.10.0",
     "inquirer": "^8.1.2",
     "mysql2": "^2.3.0"

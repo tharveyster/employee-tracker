@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
+const chalk = require('chalk');
 
 const db = mysql.createConnection(
     {
@@ -9,74 +10,80 @@ const db = mysql.createConnection(
         password: 'root',
         database: 'employee_db'
     },
-    console.log(`Connected to the employee_db database.`)
+    console.log(chalk.green.bold('Connected to the employee_db database.'))
 );
 
+console.log(chalk.cyan.bold('======================================'));
+console.log(``);
+console.log(chalk.green.bold('           EMPLOYEE TRACKER           '));
+console.log(``);
+console.log(chalk.cyan.bold('======================================'));
+    
 const mainMenu = () => {
     inquirer
     .prompt({
-        name: "action",
-        type: "list",
-        message: "What would you like to do?",
+        name: 'action',
+        type: 'list',
+        message: 'What would you like to do?',
         choices: [
-            "View all departments",
-            "View all roles",
-            "View all employees",
-            "Add a new department",
-            "Add a new role",
-            "Add a new employee",
-            "Update employee role",
-            "Update employee manager",
-            "View employees by department",
-            "Delete a department",
-            "Delete a role",
-            "Delete an employee",
-            "View department budgets",
-            "Quit"
+            'View All Departments',
+            'View All Roles',
+            'View All Employees',
+            'Add New Department',
+            'Add New Role',
+            'Add New Employee',
+            'Update Employee Role',
+            'Update Employee Manager',
+            'View Employees By Department',
+            'Delete Department',
+            'Delete Role',
+            'Delete Employee',
+            'View Department Budgets',
+            'Quit'
         ]
     })
     .then((answer) => {
         switch (answer.action) {
-            case "View all departments":
+            case 'View All Departments':
                 viewAllDepartments();
                 break;
-            case "View all roles":
+            case 'View All Roles':
                 viewAllRoles();
                 break;
-            case "View all employees":
+            case 'View All Employees':
                 viewAllEmployees();
                 break;
-            case "Add a new department":
+            case 'Add New Department':
                 addDepartment();
                 break;
-            case "Add a new role":
+            case 'Add New Role':
                 addRole();
                 break;
-            case "Add a new employee":
+            case 'Add New Employee':
                 addEmployee();
                 break;
-            case "Update employee role":
+            case 'Update Employee Role':
                 updateRole();
                 break;
-            case "Update employee manager":
+            case 'Update Employee Manager':
                 updateManager();
                 break;
-            case "View employees by department":
+            case 'View Employees By Department':
                 viewByDepartment();
                 break;
-            case "Delete a department":
+            case 'Delete Department':
                 deleteDepartment();
                 break;
-            case "Delete a role":
+            case 'Delete Role':
                 deleteRole();
                 break;
-            case "Delete an employee":
+            case 'Delete Employee':
                 deleteEmployee();
                 break;
-            case "View department budgets":
+            case 'View Department Budgets':
                 departmentBudget();
                 break;
-            case "Quit":
+            case 'Quit':
                 exitApp();
                 break;
         }
@@ -88,7 +95,12 @@ const viewAllDepartments = async () => {
         if (err) {
             console.log(err);
         } else {
+            console.log('');
+            console.log(chalk.green('==================='));
+            console.log(chalk.yellow('  DEPARTMENT LIST  '));
+            console.log(chalk.green('==================='));
             console.table(res);
+            console.log('');
             mainMenu();
         }
     });
@@ -99,7 +111,12 @@ const viewAllRoles = async () => {
         if (err) {
             console.log(err);
         } else {
+            console.log('');
+            console.log(chalk.green('============================================='));
+            console.log(chalk.yellow('             CURRENT ROLE LIST               '));
+            console.log(chalk.green('============================================='));
             console.table(res);
+            console.log('');
             mainMenu();
         }
     })
@@ -110,7 +127,12 @@ const viewAllEmployees = async () => {
         if (err) {
             console.log(err);
         } else {
+            console.log('');
+            console.log(chalk.green('=============================================================================================='));
+            console.log(chalk.yellow('                                    CURRENT EMPLOYEE LIST                                    '));
+            console.log(chalk.green('=============================================================================================='));
             console.table(res);
+            console.log('');
             mainMenu();
         }
     })
@@ -119,14 +141,14 @@ const viewAllEmployees = async () => {
 const addDepartment = async () => {
     inquirer
     .prompt({
-        name: "newDepartment",
-        type: "input",
-        message: "New department name:",
+        name: 'newDepartment',
+        type: 'input',
+        message: 'New department name:',
         validate: (name) => {
             if (name.length < 1) {
-                return console.log("The department name is required.");
+                return console.log(chalk.yellow('The department name is required.'));
             } else if (name.length > 30) {
-                return console.log("The department name must be 30 characters or less.");
+                return console.log(chalk.yellow('The department name must be 30 characters or less.'));
             } else {
                 return true;
             }
@@ -137,7 +159,9 @@ const addDepartment = async () => {
             if (err) {
                 console.log(err);
             } else {
-                console.log(`${answer.newDepartment} department successfully added.`);
+                console.log('');
+                console.log(chalk.green(`${answer.newDepartment} department successfully added.`));
+                console.log('');
                 mainMenu();
             }
         })
@@ -152,36 +176,36 @@ const addRole = async () => {
             inquirer
             .prompt([
                 {
-                    name: "newRoleTitle",
-                    type: "input",
-                    message: "New role title:",
+                    name: 'newRoleTitle',
+                    type: 'input',
+                    message: 'New role title:',
                     validate: (name) => {
                         if (name.length < 1) {
-                            return console.log("The role title is required.");
+                            return console.log(chalk.yellow('The role title is required.'));
                         } else if (name.length > 30) {
-                            return console.log("The role title must be 30 characters or less.");
+                            return console.log(chalk.yellow('The role title must be 30 characters or less.'));
                         } else {
                             return true;
                         }
                     }
                 },
                 {
-                    name: "newRoleSalary",
-                    type: "input",
-                    message: "New role salary:",
+                    name: 'newRoleSalary',
+                    type: 'input',
+                    message: 'New role salary:',
                     validate: (name) => {
                         if (name.length < 1) {
-                            return console.log("The salary is required.")
+                            return console.log(chalk.yellow('The salary is required.'))
                         } else if (isNaN(name)) {
-                            return console.log("The salary must be a number.")
+                            return console.log(chalk.yellow('The salary must be a number.'))
                         } else {
                             return true;
                         }
                     }
                 },
                 {
-                    name: "newRoleDepartment",
-                    type: "list",
+                    name: 'newRoleDepartment',
+                    type: 'list',
                     choices: function() {
                         let departmentArray = [];
                         for (let i = 0; i < res.length; i++) {
@@ -211,7 +235,9 @@ const addRole = async () => {
                         console.log(res);
                     }
                 }
-                console.log(`${answer.newRoleTitle} role successfully added.`);
+                console.log('');
+                console.log(chalk.green(`${answer.newRoleTitle} role successfully added.`));
+                console.log('');
                 mainMenu();
             })
         }
@@ -222,28 +248,28 @@ const addEmployee = async () => {
     inquirer
     .prompt([
         {
-            name: "newEmployeeFirstName",
-            type: "input",
-            message: "New employee first name:",
+            name: 'newEmployeeFirstName',
+            type: 'input',
+            message: 'New employee first name:',
             validate: (name) => {
                 if (name.length < 1) {
-                    return console.log("The employee first name is required.");
+                    return console.log(chaclk.yellow('The employee first name is required.'));
                 } else if (name.length > 30) {
-                    return console.log("The employee first name must be 30 characters or less.");
+                    return console.log(chalk.yellow('The employee first name must be 30 characters or less.'));
                 } else {
                     return true;
                 }
             }
         },
         {
-            name: "newEmployeeLastName",
-            type: "input",
-            message: "New employee last name:",
+            name: 'newEmployeeLastName',
+            type: 'input',
+            message: 'New employee last name:',
             validate: (name) => {
                 if (name.length < 1) {
-                    return console.log("The employee last name is required.");
+                    return console.log(chalk.yellow('The employee last name is required.'));
                 } else if (name.length > 30) {
-                    return console.log("The employee last name must be 30 characters or less.");
+                    return console.log(chalk.yellow('The employee last name must be 30 characters or less.'));
                 } else {
                     return true;
                 }
@@ -259,10 +285,10 @@ const addEmployee = async () => {
                 const roles = res.map(({ id, title }) => ({ name: title, value: id }));
                 inquirer.prompt([
                     {
-                        name: "role",
-                        type: "list",
+                        name: 'role',
+                        type: 'list',
                         choices: roles,
-                        message: "New employee role:"
+                        message: 'New employee role:'
                     }
                 ])
                 .then(roleChoice => {
@@ -278,10 +304,10 @@ const addEmployee = async () => {
 
                             inquirer.prompt([
                                 {
-                                    name: "manager",
-                                    type: "list",
+                                    name: 'manager',
+                                    type: 'list',
                                     choices: managers,
-                                    message: "New employee manager:"
+                                    message: 'New employee manager:'
                                 }
                             ])
                             .then(managerChoice => {
@@ -292,10 +318,11 @@ const addEmployee = async () => {
                                     if (err) {
                                         console.log(err);
                                     } else {
-                                        console.log(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`);
+                                        console.log('');
+                                        console.log(chalk.green(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`));
+                                        console.log('');
+                                        mainMenu();
                                     }
-
-                                    mainMenu();
                                 });
                             });
                         }
@@ -316,10 +343,10 @@ const updateRole = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: employeeList,
-                    message: "Which employee do you want to change?"
+                    message: 'Which employee do you want to change?'
                 }
             ])
             .then(answer => {
@@ -332,10 +359,10 @@ const updateRole = async () => {
                         const roles = res.map(({ id, title }) => ({ name: title, value: id }));
                         inquirer.prompt([
                             {
-                                name: "role",
-                                type: "list",
+                                name: 'role',
+                                type: 'list',
                                 choices: roles,
-                                message: "New role for this employee:"
+                                message: 'New role for this employee:'
                             }
                         ])
                         .then(roleChoice => {
@@ -343,7 +370,9 @@ const updateRole = async () => {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log('Employee role successfully updated.');
+                                    console.log('');
+                                    console.log(chalk.green('Employee role successfully updated.'));
+                                    console.log('');
                                     mainMenu();
                                 }
                             })
@@ -365,10 +394,10 @@ const updateManager = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: employeeList,
-                    message: "Which employee do you want to change?"
+                    message: 'Which employee do you want to change?'
                 }
             ])
             .then(answer => {
@@ -381,10 +410,10 @@ const updateManager = async () => {
                         const managers = res.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
                         inquirer.prompt([
                             {
-                                name: "manager",
-                                type: "list",
+                                name: 'manager',
+                                type: 'list',
                                 choices: managers,
-                                message: "New manager for this employee:"
+                                message: 'New manager for this employee:'
                             }
                         ])
                         .then(managerChoice => {
@@ -392,7 +421,9 @@ const updateManager = async () => {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log('Employee manager successfully updated.');
+                                    console.log('');
+                                    console.log(chalk.green('Employee manager successfully updated.'));
+                                    console.log('');
                                     mainMenu();
                                 }
                             })
@@ -414,10 +445,10 @@ const viewByDepartment = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: departmentList,
-                    message: "Department to view:"
+                    message: 'Department to view:'
                 }
             ])
             .then(answer => {
@@ -425,7 +456,12 @@ const viewByDepartment = async () => {
                     if (err) {
                         console.log(err);
                     } else {
+                        console.log('');
+                        console.log(chalk.green('============================================================='));
+                        console.log(chalk.yellow('                  DEPARTMENT EMPLOYEE LIST                   '));
+                        console.log(chalk.green('============================================================='));
                         console.table(res);
+                        console.log('');
                         mainMenu();
                     }
                 })
@@ -444,10 +480,10 @@ const deleteDepartment = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: departmentList,
-                    message: "Department to delete:"
+                    message: 'Department to delete:'
                 }
             ])
             .then(answer => {
@@ -455,7 +491,9 @@ const deleteDepartment = async () => {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log('Department successfully deleted.')
+                        console.log('');
+                        console.log(chalk.green('Department successfully deleted.'));
+                        console.log('');
                         mainMenu();
                     }
                 })
@@ -474,10 +512,10 @@ const deleteRole = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: roleList,
-                    message: "Role to delete:"
+                    message: 'Role to delete:'
                 }
             ])
             .then(answer => {
@@ -485,7 +523,9 @@ const deleteRole = async () => {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log('Role successfully deleted.')
+                        console.log('');
+                        console.log(chalk.green('Role successfully deleted.'));
+                        console.log('');
                         mainMenu();
                     }
                 })
@@ -504,10 +544,10 @@ const deleteEmployee = async () => {
             inquirer
             .prompt([
                 {
-                    name: "name",
-                    type: "list",
+                    name: 'name',
+                    type: 'list',
                     choices: employeeList,
-                    message: "Employee to delete:"
+                    message: 'Employee to delete:'
                 }
             ])
             .then(answer => {
@@ -515,7 +555,9 @@ const deleteEmployee = async () => {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log('Employee successfully deleted.')
+                        console.log('');
+                        console.log(chalk.green('Employee successfully deleted.'));
+                        console.log('');
                         mainMenu();
                     }
                 })
@@ -529,14 +571,19 @@ const departmentBudget = async () => {
         if (err) {
             console.log(err);
         } else {
+            console.log('');
+            console.log(chalk.green('========================'));
+            console.log(chalk.yellow('   DEPARTMENT BUDGETS   '));
+            console.log(chalk.green('========================'));
             console.table(res);
+            console.log('');
             mainMenu();
         }
     })
 }
 
 const exitApp = async () => {
-    console.log("Goodbye!");
+    console.log(chalk.green('Goodbye!'));
     process.exit(0);
 };
 
