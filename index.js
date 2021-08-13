@@ -60,6 +60,9 @@ const mainMenu = () => {
             case "Update employee manager":
                 updateManager();
                 break;
+            case "View employees by department":
+                viewByDepartment();
+                break;
             case "Delete department":
                 deleteDepartment();
                 break;
@@ -349,6 +352,36 @@ const updateManager = () => {
     })
 }
 
+const viewByDepartment = () => {
+    db.query('SELECT * FROM department', (err, res) => {
+        if (err) {
+            console.log(err);
+        } else {
+            const departmentList = res.map(({ id, name }) => ({ name: name, value: id}));
+
+            inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: departmentList,
+                    message: "Department to view:"
+                }
+            ])
+            .then(answer => {
+                db.query('SELECT DISTINCT a.id AS ID, CONCAT(a.first_name, " ", a.last_name) AS NAME, b.title AS TITLE, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a JOIN role b ON a.role_id = b.id JOIN department c ON b.department_id = ? LEFT JOIN employee d ON a.manager_id = d.id ORDER BY a.id ASC', answer.name, (err, res) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        console.table(res);
+                        mainMenu();
+                    }
+                })
+            })
+        }
+    })
+}
+
 const deleteDepartment = () => {
     db.query('SELECT * FROM department', (err, res) => {
         if (err) {
@@ -438,10 +471,6 @@ const deleteEmployee = () => {
         }
     })
 }
-
-// TODO - Change employee manager
-
-// TODO - View employees by department
 
 // TODO - View department budget
 
