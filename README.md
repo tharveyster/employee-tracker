@@ -1,7 +1,7 @@
 # Employee Tracker
 
 ## Description
-This project is an employee tracker. With it you can add, view, and delete departments, employee roles, and employees. You can also change an employees role and manager, view employees by department, and view department budgets based upon combined employee salaries. It was created using Node.js, MySQL, Inquirer, Console.table, and Chalk.
+This project is a command line interface (CLI) employee tracker. With it you can add, view, and delete departments, employee roles, and employees. You can also change an employees role and manager, view employees by department, and view department budgets based upon combined employee salaries. It was created using Node.js, MySQL, Inquirer, Console.table, and Chalk.
 
 ## Walkthrough video
 
