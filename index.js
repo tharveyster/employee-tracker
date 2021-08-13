@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const cTable = require('console.table');
 const chalk = require('chalk');
 
+// Database connection information
 const db = mysql.createConnection(
     {
         host: 'localhost',
@@ -13,12 +14,14 @@ const db = mysql.createConnection(
     console.log(chalk.green.bold('Connected to the employee_db database.'))
 );
 
+// App header
 console.log(chalk.cyan.bold('======================================'));
 console.log(``);
 console.log(chalk.green.bold('           EMPLOYEE TRACKER           '));
 console.log(``);
 console.log(chalk.cyan.bold('======================================'));
-    
+
+// Inquirer main menu options
 const mainMenu = () => {
     inquirer
     .prompt({
@@ -42,6 +45,7 @@ const mainMenu = () => {
             'Quit'
         ]
     })
+    // List of functions to run for each answer
     .then((answer) => {
         switch (answer.action) {
             case 'View All Departments':
@@ -90,6 +94,7 @@ const mainMenu = () => {
     })
 }
 
+// View all departments function
 const viewAllDepartments = async () => {
     db.query('SELECT name AS "DEPARTMENT NAME", id AS ID FROM department', function(err, res) {
         if (err) {
@@ -106,6 +111,7 @@ const viewAllDepartments = async () => {
     });
 }
 
+// View all roles function
 const viewAllRoles = async () => {
     db.query('SELECT a.title AS TITLE, a.id AS ID, b.name AS "DEPARTMENT", a.salary AS SALARY FROM role a LEFT JOIN department b ON a.department_id = b.id', function(err, res) {
         if (err) {
@@ -122,6 +128,7 @@ const viewAllRoles = async () => {
     })
 }
 
+// View all employees function
 const viewAllEmployees = async () => {
     db.query('SELECT a.id AS ID, a.first_name AS "FIRST NAME", a.last_name AS "LAST NAME", b.title AS "JOB TITLE", c.name AS DEPARTMENT, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a LEFT JOIN role b ON a.role_id = b.id LEFT JOIN department c ON b.department_id = c.id LEFT JOIN employee d ON a.manager_id = d.id', function(err, res) {
         if (err) {
@@ -138,6 +145,7 @@ const viewAllEmployees = async () => {
     })
 }
 
+// Add a new department function
 const addDepartment = async () => {
     inquirer
     .prompt({
@@ -168,6 +176,7 @@ const addDepartment = async () => {
     })
 }
 
+// Add a new role function
 const addRole = async () => {
     db.query('SELECT * FROM department', function (err, res) {
         if (err) {
@@ -244,6 +253,7 @@ const addRole = async () => {
     })
 }
 
+// Add a new employee function
 const addEmployee = async () => {
     inquirer
     .prompt([
@@ -333,6 +343,7 @@ const addEmployee = async () => {
     })
 }
 
+// Update employee role function
 const updateRole = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
@@ -384,6 +395,7 @@ const updateRole = async () => {
     })
 }
 
+// Update employee manager function
 const updateManager = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
@@ -435,6 +447,7 @@ const updateManager = async () => {
     })
 }
 
+// View employees by department function
 const viewByDepartment = async () => {
     db.query('SELECT * FROM department', (err, res) => {
         if (err) {
@@ -470,6 +483,7 @@ const viewByDepartment = async () => {
     })
 }
 
+// Delete department function
 const deleteDepartment = async () => {
     db.query('SELECT * FROM department', (err, res) => {
         if (err) {
@@ -502,6 +516,7 @@ const deleteDepartment = async () => {
     })
 }
 
+// Delete role function
 const deleteRole = async () => {
     db.query('SELECT * FROM role', (err, res) => {
         if (err) {
@@ -534,6 +549,7 @@ const deleteRole = async () => {
     })
 }
 
+// Delete employee function
 const deleteEmployee = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
@@ -566,6 +582,7 @@ const deleteEmployee = async () => {
     })
 }
 
+// Show department budgets function
 const departmentBudget = async () => {
     db.query('SELECT DISTINCT a.name AS DEPARTMENT, SUM(b.salary) AS BUDGET FROM department a JOIN role b ON a.id = b.department_id JOIN employee c ON b.id = c.role_id GROUP BY a.name', function(err, res) {
         if (err) {
@@ -582,9 +599,11 @@ const departmentBudget = async () => {
     })
 }
 
+// Quit the application function
 const exitApp = async () => {
     console.log(chalk.green('Goodbye!'));
     process.exit(0);
 };
 
+// Call to start the main menu
 mainMenu();
