@@ -22,16 +22,17 @@ const mainMenu = () => {
             "View all departments",
             "View all roles",
             "View all employees",
-            "Add department",
-            "Add role",
-            "Add employee",
+            "Add a new department",
+            "Add a new role",
+            "Add a new employee",
             "Update employee role",
             "Update employee manager",
             "View employees by department",
-            "Delete department",
-            "Delete role",
-            "Delete employee",
-            "View department budget"
+            "Delete a department",
+            "Delete a role",
+            "Delete an employee",
+            "View department budgets",
+            "Quit"
         ]
     })
     .then((answer) => {
@@ -45,13 +46,13 @@ const mainMenu = () => {
             case "View all employees":
                 viewAllEmployees();
                 break;
-            case "Add department":
+            case "Add a new department":
                 addDepartment();
                 break;
-            case "Add role":
+            case "Add a new role":
                 addRole();
                 break;
-            case "Add employee":
+            case "Add a new employee":
                 addEmployee();
                 break;
             case "Update employee role":
@@ -63,14 +64,20 @@ const mainMenu = () => {
             case "View employees by department":
                 viewByDepartment();
                 break;
-            case "Delete department":
+            case "Delete a department":
                 deleteDepartment();
                 break;
-            case "Delete role":
+            case "Delete a role":
                 deleteRole();
                 break;
-            case "Delete employee":
+            case "Delete an employee":
                 deleteEmployee();
+                break;
+            case "View department budgets":
+                departmentBudget();
+                break;
+            case "Quit":
+                exitApp();
                 break;
         }
     })
@@ -254,7 +261,7 @@ const addEmployee = async () => {
     })
 }
 
-const updateRole = () => {
+const updateRole = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
             console.log(err);
@@ -303,7 +310,7 @@ const updateRole = () => {
     })
 }
 
-const updateManager = () => {
+const updateManager = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
             console.log(err);
@@ -352,7 +359,7 @@ const updateManager = () => {
     })
 }
 
-const viewByDepartment = () => {
+const viewByDepartment = async () => {
     db.query('SELECT * FROM department', (err, res) => {
         if (err) {
             console.log(err);
@@ -382,7 +389,7 @@ const viewByDepartment = () => {
     })
 }
 
-const deleteDepartment = () => {
+const deleteDepartment = async () => {
     db.query('SELECT * FROM department', (err, res) => {
         if (err) {
             console.log(err);
@@ -412,7 +419,7 @@ const deleteDepartment = () => {
     })
 }
 
-const deleteRole = () => {
+const deleteRole = async () => {
     db.query('SELECT * FROM role', (err, res) => {
         if (err) {
             console.log(err);
@@ -442,7 +449,7 @@ const deleteRole = () => {
     })
 }
 
-const deleteEmployee = () => {
+const deleteEmployee = async () => {
     db.query('SELECT * FROM employee', (err, res) => {
         if (err) {
             console.log(err);
@@ -472,6 +479,20 @@ const deleteEmployee = () => {
     })
 }
 
-// TODO - View department budget
+const departmentBudget = async () => {
+    db.query('SELECT DISTINCT a.name AS DEPARTMENT, SUM(b.salary) AS BUDGET FROM department a JOIN role b ON a.id = b.department_id JOIN employee c ON b.id = c.role_id GROUP BY a.name', function(err, res) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.table(res);
+            mainMenu();
+        }
+    })
+}
+
+const exitApp = async () => {
+    console.log("Goodbye!");
+    process.exit(0);
+};
 
 mainMenu();
