@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const cTable = require('console.table');
 const chalk = require('chalk');
+const { bold } = require('chalk');
 
 // Database connection information
 const db = mysql.createConnection(
@@ -163,12 +164,13 @@ const addDepartment = async () => {
         }
     })
     .then((answer) => {
-        db.query(`INSERT INTO department (name) VALUES (?)`, `${answer.newDepartment}`, function(err, res) {
+        const newDepartment = answer.newDepartment;
+        db.query(`INSERT INTO department (name) VALUES (?)`, newDepartment, (err, res) => {
             if (err) {
                 console.log(err);
             } else {
                 console.log('');
-                console.log(chalk.green(`${answer.newDepartment} department successfully added.`));
+                console.log(chalk.green(`${newDepartment} department successfully added.`));
                 console.log('');
                 mainMenu();
             }
@@ -182,6 +184,7 @@ const addRole = async () => {
         if (err) {
             console.log(err);
         } else {
+            const department = res.map(({ id, name }) => ({ name: name, value: id }));
             inquirer
             .prompt([
                 {
@@ -215,40 +218,24 @@ const addRole = async () => {
                 {
                     name: 'newRoleDepartment',
                     type: 'list',
-                    choices: function() {
-                        let departmentArray = [];
-                        for (let i = 0; i < res.length; i++) {
-                            departmentArray.push(res[i].name);
-                        }
-                        return departmentArray;
-                    },
+                    choices: department,
+                    message: "New role department"
                 }
             ])
             .then((answer) => {
-                let department_id;
-                for (let j = 0; j < res.length; j++) {
-                    if (res[j].name == answer.newRoleDepartment) {
-                        department_id = res[j].id;
-                    }
-                }
-                db.query('INSERT INTO role SET ?',
-                    {
-                        title: answer.newRoleTitle,
-                        salary: answer.newRoleSalary,
-                        department_id: department_id
-                    },
-                ), function (err, res) {
+                const newRole = [answer.newRoleTitle, answer.newRoleSalary, answer.newRoleDepartment];
+                const newRoleTitle = answer.newRoleTitle;
+                db.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)', newRole, (err, res) => {
                     if (err) {
                         console.log(err);
                     } else {
-                        console.log(res);
+                        console.log('');
+                        console.log(chalk.green(`${newRoleTitle} role successfully added.`));
+                        console.log('');
+                        mainMenu();
                     }
-                }
-                console.log('');
-                console.log(chalk.green(`${answer.newRoleTitle} role successfully added.`));
-                console.log('');
-                mainMenu();
-            })
+                });
+            });
         }
     })
 }
@@ -288,6 +275,7 @@ const addEmployee = async () => {
     ])
     .then(answer => {
         const names = [answer.newEmployeeFirstName, answer.newEmployeeLastName];
+        const employeeName = answer.newEmployeeFirstName + " " + answer.newEmployeeLastName;
         db.query('SELECT id, title FROM role', (err, res) => {
             if (err) {
                 console.log(err);
@@ -329,7 +317,7 @@ const addEmployee = async () => {
                                         console.log(err);
                                     } else {
                                         console.log('');
-                                        console.log(chalk.green(`${answer.newEmployeeFirstName} ${answer.newEmployeeLastName} successfully added.`));
+                                        console.log(chalk.green(`${employeeName} successfully added.`));
                                         console.log('');
                                         mainMenu();
                                     }
@@ -361,8 +349,6 @@ const updateRole = async () => {
                 }
             ])
             .then(answer => {
-                const nameList = [answer.name];
-                
                 db.query('SELECT id, title FROM role', (err, res) => {
                     if (err) {
                         console.log(err);
@@ -377,12 +363,16 @@ const updateRole = async () => {
                             }
                         ])
                         .then(roleChoice => {
+                            let updatedEmployee;
+                            db.query('SELECT CONCAT(first_name, " ", last_name, "\'s") AS employeeName FROM employee WHERE id = ?', answer.name, (err, res) => {
+                                updatedEmployee = res[0].employeeName;
+                            });
                             db.query('UPDATE employee SET role_id = ? WHERE id = ?', [roleChoice.role, answer.name], (err, res) => {
                                 if (err) {
                                     console.log(err);
                                 } else {
                                     console.log('');
-                                    console.log(chalk.green('Employee role successfully updated.'));
+                                    console.log(chalk.green(`${updatedEmployee} role successfully updated.`));
                                     console.log('');
                                     mainMenu();
                                 }
@@ -413,8 +403,6 @@ const updateManager = async () => {
                 }
             ])
             .then(answer => {
-                const nameList = [answer.name];
-                
                 db.query('SELECT * FROM employee', (err, res) => {
                     if (err) {
                         console.log(err);
@@ -429,12 +417,16 @@ const updateManager = async () => {
                             }
                         ])
                         .then(managerChoice => {
+                            let updatedEmployee;
+                            db.query('SELECT CONCAT(first_name, " ", last_name, "\'s") AS employeeName FROM employee WHERE id = ?', answer.name, (err, res) => {
+                                updatedEmployee = res[0].employeeName;
+                            });
                             db.query('UPDATE employee SET manager_id = ? WHERE id = ?', [managerChoice.manager, answer.name], (err, res) => {
                                 if (err) {
                                     console.log(err);
                                 } else {
                                     console.log('');
-                                    console.log(chalk.green('Employee manager successfully updated.'));
+                                    console.log(chalk.green(`${updatedEmployee} manager successfully updated.`));
                                     console.log('');
                                     mainMenu();
                                 }
@@ -567,12 +559,16 @@ const deleteEmployee = async () => {
                 }
             ])
             .then(answer => {
+                let deletedEmployee;
+                db.query('SELECT CONCAT(first_name, " ", last_name) AS employeeName FROM employee WHERE id = ?', answer.name, (err, res) => {
+                    deletedEmployee = res[0].employeeName;
+                });
                 db.query('DELETE FROM employee WHERE id = ?', answer.name, (err, res) => {
                     if (err) {
                         console.log(err);
                     } else {
                         console.log('');
-                        console.log(chalk.green('Employee successfully deleted.'));
+                        console.log(chalk.green(`${deletedEmployee} successfully deleted.`));
                         console.log('');
                         mainMenu();
                     }
