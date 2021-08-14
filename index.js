@@ -457,13 +457,18 @@ const viewByDepartment = async () => {
                 }
             ])
             .then(answer => {
+                let departmentName; 
+                db.query('SELECT name FROM department WHERE id = ?', answer.name, (err, res) => {
+                    departmentName = res[0].name;
+                    departmentName = departmentName.toUpperCase();
+                })
                 db.query('SELECT DISTINCT a.id AS ID, CONCAT(a.first_name, " ", a.last_name) AS NAME, b.title AS TITLE, b.salary AS SALARY, CONCAT(d.first_name, " ", d.last_name) AS MANAGER FROM employee a JOIN role b ON a.role_id = b.id JOIN department c ON b.department_id = ? LEFT JOIN employee d ON a.manager_id = d.id ORDER BY a.id ASC', answer.name, (err, res) => {
                     if (err) {
                         console.log(err);
                     } else {
                         console.log('');
                         console.log(chalk.green('============================================================='));
-                        console.log(chalk.yellow('                  DEPARTMENT EMPLOYEE LIST                   '));
+                        console.log(chalk.yellow(`             ${departmentName} DEPARTMENT EMPLOYEE LIST                   `));
                         console.log(chalk.green('============================================================='));
                         console.table(res);
                         console.log('');
