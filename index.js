@@ -8,8 +8,8 @@ const { bold } = require('chalk');
 const db = mysql.createConnection(
     {
         host: 'localhost',
-        user: 'root',
-        password: 'root',
+        user: 'root', // Must be changed to match your MySQL username
+        password: '', // Must be changed to match your MySQL password
         database: 'employee_db'
     },
     console.log(chalk.green.bold('Connected to the employee_db database.'))
